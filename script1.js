@@ -37,11 +37,16 @@ var rotation = 0;
 objects = [];
 
 
-var cyl1 = createCylinder(10, 2, 1, 0, 0);
+var geo = new thre.CylinderGeometry(0.2, 0.2, 6, 16);
+geo.rotateZ(Math.PI/2)
+var bar = new thre.Mesh(geo, textured);
+bar.receiveShadow = bar.castShadow = true;
+can.add(bar);
+var cyl1 = createCylinder({height: 2, width:1});
 cyl1.position.x = 2
+var cyl2 = createCylinder({height: 2, width:1});
+cyl2.position.z = 2
 // cyl1.rotateOnWorldAxis(new thre.Vector3(1, 0, 0))
-var bar = createCylinder(0, 6, 0.2, 0, 0);
-bar.rotateZ(Math.PI/2);
 
 
 var light2 = new thre.DirectionalLight(0xffffff, 0.5, 20/*, Math.PI/2, 0, 1*/);
@@ -61,24 +66,18 @@ for (var i = 0; i < max*2; i++) {
     let phi = Math.PI/2-(Math.PI/10*2)*(i>=max?-1:1);
     light.position.setFromSphericalCoords(7, phi, Math.PI*2/max*i)
     can.add(light);
-    light = createPoint(phi, Math.PI*2/max*i, 7)
-    can.add(light);
+    let marker = createPoint(0, 0, 0);
+    light.add(marker);
 }
 
 
-var point = createCylinder(0, 0.5, 0.1, 0, 0);
+var point = createCylinder({height: 0.5, width: 0.1});
 point.position.y = 0.5;
 point.castShadow = true;
 point.receiveShadow = true;
 var x = Math.PI/2, y = 0
 can.add(point);
 
-// var uplight = new thre.DirectionalLight(0xffffff, 1);
-// var downlight = new thre.DirectionalLight(0xfffffff, 1);
-// uplight.position.set(0, 1, 0);
-// downlight.position.set(1, 0, 0);
-// can.add(uplight);
-// can.add(downlight);
 
 function loop() {
     rotation = time/100;
@@ -86,7 +85,7 @@ function loop() {
 
     point.position = point3d(x, Math.PI/2);
 
-    cyl1.draw(rotation);
+    // cyl1.draw(rotation);
     // cyl1.rotateY(Math.PI/180*0.5);
     // cam.position.x = Math.sin(rotation/3)*5;
     // cam.position.z = Math.cos(rotation/3)*5;
@@ -108,12 +107,14 @@ function point3d(x, y) {
     return point
 }
 
-function createCylinder(weight, height, width, dist, x) {
+function createCylinder(options = {weight: 10, height: 2, width: 1, x:2, z:0}) {
+    unpack(options, this);
     var geo = new thre.CylinderGeometry(width, width, height, 64);
     var mesh = new thre.Mesh(geo, textured);
-    mesh.receiveShadow = true
-    mesh.castShadow = true
-    can.add(mesh);
+    mesh.receiveShadow = true;
+    mesh.castShadow = true;
+    mesh.position.set(x, 0, y);
+    bar.add(mesh);
     var wireframe = new thre.Mesh(geo, wire);
     // mesh.add(wireframe);
     var pos = mesh.position;
@@ -121,7 +122,7 @@ function createCylinder(weight, height, width, dist, x) {
     mesh.draw = function(rotation) {
         pos.x = Math.sin(rotation)*1.4;
         pos.z = Math.cos(rotation)*1.4;
-        mesh.setRotationFromAxisAngle(new thre.Vector3(0, 1, 0).add(new thre.Vector3(1, 0, 0)).setLength(1), rotation)
+        mesh.setRotationFromAxisAngle(new thre.Vector3(0, 1, 0).add(new thre.Vector3(0, 0, 0)).setLength(1), rotation)
         // mesh.setRotationFromAxisAngle(new thre.Vector3(1, 0, 0), rotation/2)
     }
     objects.push(mesh)
@@ -144,3 +145,8 @@ function createPoint(x, y, r=1) {
     time++;
     requestAnimationFrame(renderLoop)
 })();
+function unpack(obj, dest) {
+    for (var key in obj) {
+        dest[key] = obj[key];
+    }
+}
