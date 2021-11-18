@@ -3,12 +3,14 @@ try {
 }catch(e){}
 const thre = THREE;
 const canvas = document.getElementById("can");
+canvas.onclick = click;
 
 //setup
 document.body.style.backgroundColor = "#333";
 const can = new thre.Scene();
 const cam = new thre.PerspectiveCamera(75);
 const renderer = new thre.WebGLRenderer({canvas});
+const raycaster = new thre.Raycaster();
 renderer.shadowMap.enabled = true
 can.background = new thre.Color(0xa0a0a0)
 cam.position.z = 10;
@@ -42,10 +44,9 @@ geo.rotateZ(Math.PI/2)
 var bar = new thre.Mesh(geo, textured);
 bar.receiveShadow = bar.castShadow = true;
 can.add(bar);
-var cyl1 = createCylinder({height: 2, width:1});
+var cyl1 = createCylinder({height: 2, width:1, x:2, z:0});
 cyl1.position.x = 2
-var cyl2 = createCylinder({height: 2, width:1});
-cyl2.position.z = 2
+var cyl2 = createCylinder({height: 2, width:1, x:0, z:2});
 // cyl1.rotateOnWorldAxis(new thre.Vector3(1, 0, 0))
 
 
@@ -78,6 +79,24 @@ point.receiveShadow = true;
 var x = Math.PI/2, y = 0
 can.add(point);
 
+
+function click() {
+    cam.position.setX = 0;
+    raycaster.setFromCamera({x:0, y:-0.1}, cam);
+    var intersects = raycaster.intersectObjects(can.children)
+    console.log(intersects);
+    intersects.forEach(point => {
+        console.log(point.point);
+        let geo = new thre.SphereGeometry(0.5);
+        let mesh = new thre.Mesh(geo, crimson);
+        mesh.position.setX(point.point.x)
+        mesh.position.setY(point.point.y)
+        mesh.position.setZ(point.point.z)
+        can.add(mesh);
+    })
+    cam.position.x = 6;
+    cam.lookAt(new thre.Vector3(0, 0, 0))
+}
 
 function loop() {
     rotation = time/100;
@@ -113,9 +132,9 @@ function createCylinder(options = {weight: 10, height: 2, width: 1, x:2, z:0}) {
     var mesh = new thre.Mesh(geo, textured);
     mesh.receiveShadow = true;
     mesh.castShadow = true;
-    mesh.position.set(x, 0, y);
+    mesh.position.set(x, 0, z);
     bar.add(mesh);
-    var wireframe = new thre.Mesh(geo, wire);
+    // var wireframe = new thre.Mesh(geo, wire);
     // mesh.add(wireframe);
     var pos = mesh.position;
 
