@@ -11,7 +11,7 @@ const cam = new thre.PerspectiveCamera(75);
 const renderer = new thre.WebGLRenderer({canvas});
 renderer.shadowMap.enabled = true
 can.background = new thre.Color(0xa0a0a0)
-cam.position.z = 6;
+cam.position.z = 10;
 cam.position.y = 5;
 cam.lookAt(0, 0, 0);
 
@@ -24,7 +24,8 @@ can.add(grid);
 
 //materials
 var bumps = new THREE.TextureLoader().load("https://threejs.org/examples/models/gltf/LeePerrySmith/Infinite-Level_02_Disp_NoSmoothUV-4096.jpg");
-const textured = new thre.MeshPhongMaterial({color: "lightgray", flatShading: true, vertexColors: false, shininess: 1, bumpMap: bumps, bumpScale: 0.3});
+var plaster = new THREE.TextureLoader().load("https://thumbs.dreamstime.com/z/k-rough-plaster-roughness-texture-height-map-specular-imperfection-d-materials-black-white-hi-res-200368950.jpg");
+const textured = new thre.MeshPhongMaterial({color: "lightgray", flatShading: true, vertexColors: false, shininess: 1, bumpMap: plaster, bumpScale: 1});
 const flat = new thre.MeshPhongMaterial({color: "lightgray", flatShading: true, vertexColors: false, shininess: 1});
 const crimson = new thre.MeshPhongMaterial({color: "crimson", flatShading: true, vertexColors: false, shininess: 1});
 
@@ -38,20 +39,11 @@ objects = [];
 
 var cyl1 = createCylinder(10, 2, 1, 0, 0);
 cyl1.position.x = 2
+// cyl1.rotateOnWorldAxis(new thre.Vector3(1, 0, 0))
 var bar = createCylinder(0, 6, 0.2, 0, 0);
 bar.rotateZ(Math.PI/2);
 
 
-// var ambient = new thre.AmbientLight(0xffffff, 0.2);
-// can.add(ambient)
-var light = new thre.PointLight(0xffffff, 0.5, 20/*, Math.PI/2, 0, 1*/);
-light.castShadow = false;
-light.position.set(5, 3, 0);
-can.add(light)
-var light1 = new thre.PointLight(0xffffff, 0.5, 20/*, Math.PI/2, 0, 1*/);
-light1.castShadow = false;
-light1.position.set(0, 0, 6);
-can.add(light1)
 var light2 = new thre.DirectionalLight(0xffffff, 0.5, 20/*, Math.PI/2, 0, 1*/);
 light2.castShadow = true;
 light2.position.set(0, 5, 0);
@@ -62,6 +54,16 @@ shadow.rotateX(-Math.PI/2);
 shadow.position.y = -2.1
 shadow.receiveShadow = true
 can.add(shadow);
+
+let max = 5
+for (var i = 0; i < max*2; i++) {
+    let light = new thre.PointLight(0xffffff, 1/max, 40)
+    let phi = Math.PI/2-(Math.PI/10*2)*(i>=max?-1:1);
+    light.position.setFromSphericalCoords(7, phi, Math.PI*2/max*i)
+    can.add(light);
+    light = createPoint(phi, Math.PI*2/max*i, 7)
+    can.add(light);
+}
 
 
 var point = createCylinder(0, 0.5, 0.1, 0, 0);
@@ -89,7 +91,6 @@ function loop() {
     // cam.position.x = Math.sin(rotation/3)*5;
     // cam.position.z = Math.cos(rotation/3)*5;
     // cam.lookAt(0, 0, 0)
-    cyl1.setRotationFromAxisAngle(new thre.Vector3(0, 1, 0), rotation)
     bar.rotation.y = rotation+Math.PI/2;
     // bar.rotateX(0.1)
 }
@@ -120,22 +121,19 @@ function createCylinder(weight, height, width, dist, x) {
     mesh.draw = function(rotation) {
         pos.x = Math.sin(rotation)*1.4;
         pos.z = Math.cos(rotation)*1.4;
+        mesh.setRotationFromAxisAngle(new thre.Vector3(0, 1, 0).add(new thre.Vector3(1, 0, 0)).setLength(1), rotation)
+        // mesh.setRotationFromAxisAngle(new thre.Vector3(1, 0, 0), rotation/2)
     }
     objects.push(mesh)
     return mesh
 }
-function createPoint(x, y, r) {
+function createPoint(x, y, r=1) {
     var geo = new thre.CylinderGeometry(0.1, 0.1, 0.6, 16);
     var mesh = new thre.Mesh(geo, crimson);
     mesh.receiveShadow = true
     mesh.castShadow = true
     can.add(mesh);
-    var pos = mesh.position;
-
-    mesh.draw = function(rotation) {
-        pos.x = Math.sin(rotation)*1.4;
-        pos.z = Math.cos(rotation)*1.4;
-    }
+    var pos = mesh.position.setFromSphericalCoords(r, x, y)
     objects.push(mesh)
     return mesh
 }
