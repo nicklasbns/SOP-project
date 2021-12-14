@@ -46,10 +46,12 @@ var Dtime = 0;
 var rotation = 0;
 var inert = 0;
 var momentumn = 1;
-var objects = [];
+// var objects = [];
 var highlight = 0;
 var running = true;
-var debug = 0;
+// logging/data collection
+var hitEnd = 0;
+var period = 0;
 
 
 var geo = new thre.CylinderGeometry(0.2, 0.2, 6, 16);
@@ -104,17 +106,16 @@ function pause(e) {
         rotation = 0;
         momentumn  = 1;
     }
-
 }
 
 function click(event) {
     if (running) return;
     var button = event.button == 2;
     raycaster.setFromCamera({x:event.layerX/width*2-1, y:-event.layerY/height*2+1}, cam);
-    var intersects = raycaster.intersectObjects(button ? objects : [shadow]);
+    var intersects = raycaster.intersectObjects(button ? bar.children : [shadow]);
     if (!intersects.length) return;
     if (button) {
-        objects = objects.filter(e => e.uuid != intersects[0].object.uuid);
+        // // objects = objects.filter(e => e.uuid != intersects[0].object.uuid);
         bar.remove(intersects[0].object);
         event.preventDefault();
     } else {
@@ -123,7 +124,7 @@ function click(event) {
         mesh.position.setX(intersects[0].point.x);
         mesh.position.setY(intersects[0].point.y);
         mesh.position.setZ(intersects[0].point.z);
-        objects.push(mesh);
+        // objects.push(mesh);
         bar.add(mesh);
     }
 }
@@ -131,7 +132,7 @@ function click(event) {
 function hover(event) {
     if (running) return;
     raycaster.setFromCamera({x:event.layerX/width*2-1, y:-event.layerY/height*2+1}, cam);
-    var intersects = raycaster.intersectObjects(objects);
+    var intersects = raycaster.intersectObjects(bar.children);
     if (!intersects.length) return highlight.material = crimson;
     if (highlight != intersects[0].object || !highlight) {
         highlight.material = crimson;
@@ -141,15 +142,18 @@ function hover(event) {
 }
 
 function loop() {
-    Dtime = Date.now()-time;
+    Dtime += Date.now()-time;
     time = Date.now();
-    if (Dtime == 0 || Dtime > 500) return
-    momentumn -= rotation*0.022;
-    rotation += momentumn*Dtime/300;
+    if (Dtime == 0 || Dtime > 500) return Dtime = 0;
+    for (; Dtime > 0; Dtime-=3) {
+        momentumn -= rotation*0.022; // angle * spring force
+        rotation += momentumn/300;
+    }
     inert = 1/12*5*6**2;
-    if (debug ? momentumn > 0 : momentumn < 0) {
-        debug = !debug;
-        console.log(Math.abs(rotation).toFixed(3));
+    if (hitEnd ? momentumn > 0 : momentumn < 0) {
+        hitEnd = !hitEnd;
+        console.log(period-Date.now(), Math.abs(rotation).toFixed(3));
+        period = Date.now();
     }
     bar.rotation.y = rotation;
 }
