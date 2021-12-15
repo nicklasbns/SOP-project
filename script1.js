@@ -30,7 +30,6 @@ can.add(grid);
 
 
 //materials
-var bumps = new THREE.TextureLoader().load("https://threejs.org/examples/models/gltf/LeePerrySmith/Infinite-Level_02_Disp_NoSmoothUV-4096.jpg");
 var plaster = new THREE.TextureLoader().load("https://thumbs.dreamstime.com/z/k-rough-plaster-roughness-texture-height-map-specular-imperfection-d-materials-black-white-hi-res-200368950.jpg");
 const textured = new thre.MeshPhongMaterial({color: "lightgray", flatShading: true, vertexColors: false, shininess: 1, bumpMap: plaster, bumpScale: 1});
 const flat = new thre.MeshPhongMaterial({color: "lightgray", flatShading: true, vertexColors: false, shininess: 1});
@@ -46,12 +45,15 @@ var Dtime = 0;
 var rotation = 0;
 var inert = 0;
 var momentumn = 1;
+var vinkelacceleration = 0;
+var speed, limit;
 // var objects = [];
 var highlight = 0;
 var running = true;
 // logging/data collection
 var hitEnd = 0;
 var period = 0;
+var timer = 0;
 
 
 var geo = new thre.CylinderGeometry(0.2, 0.2, 6, 16);
@@ -142,23 +144,35 @@ function hover(event) {
 }
 
 function loop() {
-    Dtime += Date.now()-time;
-    time = Date.now();
+    var tmp = Date.now();
+    Dtime += tmp-time;
+    time = tmp;
     if (Dtime == 0 || Dtime > 500) return Dtime = 0;
-    for (; Dtime > 0; Dtime-=3) {
-        momentumn -= rotation*0.022; // angle * spring force
-        rotation += momentumn/300;
+    inert = 1/12*0.128*0.6**2;
+    for (; Dtime > 0; Dtime-=1) {
+        // vinkelacceleration = rotation*0.022*0.0135/inert
+        // momentumn -= vinkelacceleration; // angle * spring force
+        timer++
+        speed = 5, limit = 600
+        momentumn += speed*0.001
+        rotation += momentumn/1000;
+        if (timer == limit) {
+            console.log(rotation, 1/2*speed*Math.pow(limit/1000, 2), rotation/(1/2*speed*Math.pow(limit/1000, 2)));
+            // debugger;
+        }
     }
-    inert = 1/12*5*6**2;
     if (hitEnd ? momentumn > 0 : momentumn < 0) {
         hitEnd = !hitEnd;
-        console.log(period-Date.now(), Math.abs(rotation).toFixed(3));
+        console.log((timer)*2, Math.abs(rotation).toFixed(3));
         period = Date.now();
+        timer = 0;
     }
     bar.rotation.y = rotation;
 }
 
-
+// setInterval(() => {
+//     rotation = 0; console.log(timer, timer = 0, Date.now()-period, period = Date.now());
+// }, 1000);
 
 
 
