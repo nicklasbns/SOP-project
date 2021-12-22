@@ -1,7 +1,8 @@
 try {
     const THREE = require("three");
+    const log4j = require("log4j");
 }catch(e){}
-const thre = THREE;
+const three = THREE;
 const canvas = document.getElementById("can");
 canvas.onclick = click;
 canvas.oncontextmenu = click;
@@ -11,19 +12,17 @@ document.getElementById("pause").onclick = pause;
 //setup
 document.body.style.backgroundColor = "#333";
 const {width, height} = canvas;
-const can = new thre.Scene();
-const cam = new thre.PerspectiveCamera(75);
-const renderer = new thre.WebGLRenderer({canvas});
-const raycaster = new thre.Raycaster();
+const can = new three.Scene();
+const cam = new three.PerspectiveCamera(75, width/height);
+const renderer = new three.WebGLRenderer({canvas});
+const raycaster = new three.Raycaster();
 renderer.shadowMap.enabled = true
-can.background = new thre.Color(0xa0a0a0);
-cam.position.z = 10;
-cam.position.y = 5;
-cam.position.x = 0;
+can.background = new three.Color(0xa0a0a0);
+cam.position.set(0, 4, 10);
 cam.lookAt(0, 0, 0);
 
 //grid
-var grid = new thre.GridHelper(10, 10, "gray", "gray");
+var grid = new three.GridHelper(10, 10, "gray", "gray");
 grid.receiveShadow = true;
 grid.position.y = -2;
 can.add(grid);
@@ -31,20 +30,20 @@ can.add(grid);
 
 //materials
 var plaster = new THREE.TextureLoader().load("https://thumbs.dreamstime.com/z/k-rough-plaster-roughness-texture-height-map-specular-imperfection-d-materials-black-white-hi-res-200368950.jpg");
-const textured = new thre.MeshPhongMaterial({color: "lightgray", flatShading: true, vertexColors: false, shininess: 1, bumpMap: plaster, bumpScale: 1});
-const flat = new thre.MeshPhongMaterial({color: "lightgray", flatShading: true, vertexColors: false, shininess: 1});
-const transparrent = new thre.MeshPhongMaterial({color: "white", flatShading: true, vertexColors: false, shininess: 1, transparent: true, opacity: 0});
-const crimson = new thre.MeshPhongMaterial({color: "crimson", flatShading: true, vertexColors: false, shininess: 1});
-const yellow = new thre.MeshPhongMaterial({color: new thre.Color(0.862, 0.90, 0.235), flatShading: true, vertexColors: false, shininess: 1});
+const textured = new three.MeshPhongMaterial({color: "lightgray", flatShading: true, vertexColors: false, shininess: 1, bumpMap: plaster, bumpScale: 1});
+const flat = new three.MeshPhongMaterial({color: "lightgray", flatShading: true, vertexColors: false, shininess: 1});
+const transparrent = new three.MeshPhongMaterial({color: "white", flatShading: true, vertexColors: false, shininess: 1, transparent: true, opacity: 0});
+const crimson = new three.MeshPhongMaterial({color: "crimson", flatShading: true, vertexColors: false, shininess: 1});
+const yellow = new three.MeshPhongMaterial({color: new three.Color(0.862, 0.90, 0.235), flatShading: true, vertexColors: false, shininess: 1});
 
-const wire = new thre.MeshBasicMaterial({color: "black", wireframe: true});
+const wire = new three.MeshBasicMaterial({color: "black", wireframe: true});
 
 //vars
 var time = Date.now();
 var Dtime = 0;
 var rotation = 0;
 var inert = 0;
-var momentumn = 1;
+var momentumn = 5;
 var vinkelacceleration = 0;
 var speed, limit;
 // var objects = [];
@@ -52,36 +51,36 @@ var highlight = 0;
 var running = true;
 // logging/data collection
 var hitEnd = 0;
-var period = 0;
+var period = Date.now();
 var timer = 0;
 
 
-var geo = new thre.CylinderGeometry(0.2, 0.2, 6, 16);
+var geo = new three.CylinderGeometry(0.2, 0.2, 6, 16);
 geo.rotateZ(Math.PI/2)
-var bar = new thre.Mesh(geo, textured);
+var bar = new three.Mesh(geo, textured);
 bar.receiveShadow = bar.castShadow = true;
 can.add(bar);
 // createCylinder({height: 2, width:1, x:2, z:0});
 // createCylinder({height: 2, width:1, x:-2, z:0});
 
 
-var light2 = new thre.DirectionalLight(0xffffff, 0.5);
+var light2 = new three.DirectionalLight(0xffffff, 0.5);
 light2.castShadow = true;
 light2.position.set(0, 5, 0);
 can.add(light2)
-var shadowGeo = new thre.PlaneGeometry(10, 10);
-var shadow = new thre.Mesh(shadowGeo, flat);
+var shadowGeo = new three.PlaneGeometry(10, 10);
+var shadow = new three.Mesh(shadowGeo, flat);
 shadow.rotateX(-Math.PI/2);
 shadow.position.y = -2.01
 shadow.receiveShadow = true;
 can.add(shadow);
-shadow = new thre.Mesh(shadowGeo, transparrent);
+shadow = new three.Mesh(shadowGeo, transparrent);
 shadow.rotateX(-Math.PI/2);
 can.add(shadow);
 
 
 for (var i = 0, max = 5; i < max*2; i++) {
-    let light = new thre.PointLight(0xffffff, 1/max, 40);
+    let light = new three.PointLight(0xffffff, 1/max, 40);
     let phi = Math.PI/2-(Math.PI/10*2)*(i>=max?-1:1);
     light.position.setFromSphericalCoords(7, phi, Math.PI*2/max*i);
     can.add(light);
@@ -106,7 +105,7 @@ function pause(e) {
         e.srcElement.innerText = "pause";
         running = true;
         rotation = 0;
-        momentumn  = 1;
+        momentumn  = 5;
     }
 }
 
@@ -121,8 +120,8 @@ function click(event) {
         bar.remove(intersects[0].object);
         event.preventDefault();
     } else {
-        let geo = new thre.SphereGeometry(0.5);
-        let mesh = new thre.Mesh(geo, crimson);
+        let geo = new three.SphereGeometry(0.5);
+        let mesh = new three.Mesh(geo, crimson);
         mesh.position.setX(intersects[0].point.x);
         mesh.position.setY(intersects[0].point.y);
         mesh.position.setZ(intersects[0].point.z);
@@ -144,28 +143,28 @@ function hover(event) {
 }
 
 function loop() {
-    var tmp = Date.now();
-    Dtime += tmp-time;
-    time = tmp;
-    if (Dtime == 0 || Dtime > 500) return Dtime = 0;
+    Dtime = Date.now();
     inert = 1/12*0.128*0.6**2;
-    for (; Dtime > 0; Dtime-=1) {
-        // vinkelacceleration = rotation*0.022*0.0135/inert
-        // momentumn -= vinkelacceleration; // angle * spring force
+
+    // bar.children.forEach(weight => {
+    //     weight.position.distanceTo(Vector3())
+    // });
+
+    for (; Dtime > time; time++) {
+        momentumn -= rotation*0.022*0.0135/inert; // angle * spring force
         timer++
-        speed = 5, limit = 600
-        momentumn += speed*0.001
+        // speed = 2.38, limit = 18800;
+        // momentumn = Math.PI;
         rotation += momentumn/1000;
         if (timer == limit) {
-            console.log(rotation, 1/2*speed*Math.pow(limit/1000, 2), rotation/(1/2*speed*Math.pow(limit/1000, 2)));
+            console.log(rotation, 1/2*speed*Math.pow(limit/1000, 2), rotation/(1/2*speed*Math.pow(limit/1000, 2)), Date.now()-period);
             // debugger;
         }
-    }
-    if (hitEnd ? momentumn > 0 : momentumn < 0) {
-        hitEnd = !hitEnd;
-        console.log((timer)*2, Math.abs(rotation).toFixed(3));
-        period = Date.now();
-        timer = 0;
+        if (hitEnd ? momentumn > 0 : momentumn < 0) {
+            hitEnd = !hitEnd;
+            console.log((timer)*2, Math.abs(rotation).toFixed(3));
+            timer = 0;
+        }
     }
     bar.rotation.y = rotation;
 }
@@ -178,7 +177,7 @@ function loop() {
 
 
 function point3d(x, y) {
-    var point = new thre.Vector3();
+    var point = new three.Vector3();
     point.x = Math.sin(y)*Math.cos(x);
     point.z = Math.sin(y)*Math.sin(x);
     point.y = 2+Math.cos(y);
@@ -186,8 +185,8 @@ function point3d(x, y) {
 }
 
 function createCylinder(options = {weight: 10, height: 2, width: 1, x:2, z:0}) {
-    var geo = new thre.CylinderGeometry(options.width, options.width, options.height, 64);
-    var mesh = new thre.Mesh(geo, textured);
+    var geo = new three.CylinderGeometry(options.width, options.width, options.height, 64);
+    var mesh = new three.Mesh(geo, textured);
     mesh.receiveShadow = true;
     mesh.castShadow = true;
     mesh.position.set(options.x, 0, options.z);
@@ -199,15 +198,15 @@ function createCylinder(options = {weight: 10, height: 2, width: 1, x:2, z:0}) {
     mesh.draw = function(rotation) {
         pos.x = Math.sin(rotation)*1.4;
         pos.z = Math.cos(rotation)*1.4;
-        mesh.setRotationFromAxisAngle(new thre.Vector3(0, 1, 0).add(new thre.Vector3(0, 0, 0)).setLength(1), rotation)
+        mesh.setRotationFromAxisAngle(new three.Vector3(0, 1, 0).add(new three.Vector3(0, 0, 0)).setLength(1), rotation)
         // mesh.setRotationFromAxisAngle(new thre.Vector3(1, 0, 0), rotation/2)
     }
     // objects.push(mesh)
     return mesh
 }
 function createPoint(x, y, r=1) {
-    var geo = new thre.CylinderGeometry(0.1, 0.1, 0.6, 16);
-    var mesh = new thre.Mesh(geo, crimson);
+    var geo = new three.CylinderGeometry(0.1, 0.1, 0.6, 16);
+    var mesh = new three.Mesh(geo, crimson);
     mesh.receiveShadow = true
     mesh.castShadow = true
     can.add(mesh);
