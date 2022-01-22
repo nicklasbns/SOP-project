@@ -8,6 +8,7 @@ canvas.onclick = click;
 canvas.oncontextmenu = click;
 canvas.onmousemove = hover;
 document.getElementById("pause").onclick = pause;
+const info = document.getElementById("dataInfo");
 
 //setup
 document.body.style.backgroundColor = "#333";
@@ -40,6 +41,7 @@ const wire = new three.MeshBasicMaterial({color: "black", wireframe: true});
 
 //vars
 var time = Date.now();
+var frames = 0;
 var Dtime = 0;
 var rotation = 0;
 var inert = 0;
@@ -151,7 +153,7 @@ function loop() {
     // });
 
     for (; Dtime > time; time++) {
-        momentumn -= rotation*0.022*0.0135/inert; // angle * spring force
+        momentumn -= rotation*0.022*0.0135/inert;///inert; // angle * spring force(force/dist)
         timer++
         // speed = 2.38, limit = 18800;
         // momentumn = Math.PI;
@@ -163,9 +165,11 @@ function loop() {
         if (hitEnd ? momentumn > 0 : momentumn < 0) {
             hitEnd = !hitEnd;
             console.log((timer)*2, Math.abs(rotation).toFixed(3));
-            timer = 0;
+            // timer = 0;
         }
     }
+    info.innerText = `Frame: ${frames}`
+
     bar.rotation.y = rotation;
 }
 
@@ -216,6 +220,7 @@ function createPoint(x, y, r=1) {
 (renderLoop = () => {
     loop();
     renderer.render(can, cam);
-    time++;
+    frames++;
+    //time++;  //fucking stupid idito retard dumb
     requestAnimationFrame(renderLoop)
 })();
