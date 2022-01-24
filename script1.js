@@ -116,7 +116,7 @@ function click(event) {
     var button = event.button == 2;
     raycaster.setFromCamera({x:event.layerX/width*2-1, y:-event.layerY/height*2+1}, cam);
     var intersects = raycaster.intersectObjects(button ? bar.children : [shadow]);
-    if (!intersects.length) return;
+    if (!intersects.length) return event.preventDefault();
     if (button) {
         // // objects = objects.filter(e => e.uuid != intersects[0].object.uuid);
         bar.remove(intersects[0].object);
@@ -146,18 +146,19 @@ function hover(event) {
 
 function loop() {
     Dtime = Date.now();
-    inert = 1/12*0.128*0.6**2;
+    inert = 1/12*0.128*0.6*0.6;
 
     // bar.children.forEach(weight => {
     //     weight.position.distanceTo(Vector3())
     // });
 
     for (; Dtime > time; time++) {
-        momentumn -= rotation*0.022*0.0135/inert;///inert; // angle * spring force(force/dist)
+        momentumn -= rotation*0.022/**0.135*//inert/1000;///inert; // angle * spring force(force/dist)
         timer++
         // speed = 2.38, limit = 18800;
         // momentumn = Math.PI;
-        rotation += momentumn/1000;
+        //momentumn = 6.67/1000*time
+        rotation += momentumn/1000
         if (timer == limit) {
             console.log(rotation, 1/2*speed*Math.pow(limit/1000, 2), rotation/(1/2*speed*Math.pow(limit/1000, 2)), Date.now()-period);
             // debugger;
@@ -165,7 +166,7 @@ function loop() {
         if (hitEnd ? momentumn > 0 : momentumn < 0) {
             hitEnd = !hitEnd;
             console.log((timer)*2, Math.abs(rotation).toFixed(3));
-            // timer = 0;
+            timer = 0;
         }
     }
     info.innerText = `Frame: ${frames}`
