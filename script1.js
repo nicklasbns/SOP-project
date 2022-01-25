@@ -8,7 +8,13 @@ canvas.onclick = click;
 canvas.oncontextmenu = click;
 canvas.onmousemove = hover;
 document.getElementById("pause").onclick = pause;
+document.getElementById("restart").onclick = restart;
+document.getElementById("clear").onclick = () => bar.remove(...bar.children);
 const info = document.getElementById("dataInfo");
+const startAngle = document.getElementById("startAngle");
+const deg = document.getElementById("deg");
+const elemWeight = document.getElementById("weight");
+[...document.getElementsByClassName("preset")].forEach((elem, i) => elem.onclick = () => {add(i == 0 ? 2.8 : i == 1 ? 2.2 : i == 2 ? 1.9 : i == 3 ? 1.6 : 0, 0); add(i == 0 ? -2.8 : i == 1 ? -2.2 : i == 2 ? -1.9 : i == 3 ? -1.6 : 0, 0)})
 
 //setup
 document.body.style.backgroundColor = "#333";
@@ -19,7 +25,7 @@ const renderer = new three.WebGLRenderer({canvas});
 const raycaster = new three.Raycaster();
 renderer.shadowMap.enabled = true
 can.background = new three.Color(0xa0a0a0);
-cam.position.set(0, 4, 10);
+cam.position.set(0, 4, 10.32);
 cam.lookAt(0, 0, 0);
 
 //grid
@@ -43,9 +49,10 @@ const wire = new three.MeshBasicMaterial({color: "black", wireframe: true});
 var time = Date.now();
 var frames = 0;
 var Dtime = 0;
-var rotation = 0;
-var inert = 0;
-var momentumn = 5;
+var rotation = Math.PI/4;
+var baseInert = 1/12*0.128*0.6*0.6;
+var inert = baseInert;
+var momentumn = 0;
 var vinkelacceleration = 0;
 var speed, limit;
 // var objects = [];
@@ -101,14 +108,21 @@ function pause(e) {
     if (running) {
         e.srcElement.innerText = "paused";
         running = false;
-        rotation = 0;
-        momentumn  = 0;
+        // rotation = 0;
+        // momentumn  = 0;
     } else {
         e.srcElement.innerText = "pause";
         running = true;
-        rotation = 0;
-        momentumn  = 5;
+        time = Dtime
+        // rotation = deg.checked ? startAngle.value/180*Math.PI : startAngle.value-0;
+        // momentumn  = 0;
     }
+}
+
+function restart() {
+    rotation = deg.checked ? startAngle.value/180*Math.PI : startAngle.value-0;
+    momentumn  = 0;
+    timer = 0
 }
 
 function click(event) {
@@ -122,14 +136,19 @@ function click(event) {
         bar.remove(intersects[0].object);
         event.preventDefault();
     } else {
-        let geo = new three.SphereGeometry(0.5);
-        let mesh = new three.Mesh(geo, crimson);
-        mesh.position.setX(intersects[0].point.x);
-        mesh.position.setY(intersects[0].point.y);
-        mesh.position.setZ(intersects[0].point.z);
-        // objects.push(mesh);
-        bar.add(mesh);
+        add(intersects[0].point.x, intersects[0].point.y);
     }
+}
+
+function add(x, z) {
+    let geo = new three.SphereGeometry(0.5);
+    let mesh = new three.Mesh(geo, crimson);
+    mesh.position.setX(x);
+    mesh.position.setY(0);
+    mesh.position.setZ(z);
+    // objects.push(mesh);
+    mesh.weight = elemWeight.value/1000
+    bar.add(mesh);
 }
 
 function hover(event) {
@@ -146,18 +165,17 @@ function hover(event) {
 
 function loop() {
     Dtime = Date.now();
-    inert = 1/12*0.128*0.6*0.6;
+    inert = baseInert
+    bar.children.forEach(mesh => {inert += mesh.weight*(mesh.position.distanceTo(bar.position)/10)**2})
 
     // bar.children.forEach(weight => {
     //     weight.position.distanceTo(Vector3())
     // });
 
-    for (; Dtime > time; time++) {
-        momentumn -= rotation*0.022/**0.135*//inert/1000;///inert; // angle * spring force(force/dist)
+    for (; Dtime > time && running; time++) {
+        momentumn -= rotation*0.022/inert/1000; // angle * spring force(force/dist)
         timer++
-        // speed = 2.38, limit = 18800;
-        // momentumn = Math.PI;
-        //momentumn = 6.67/1000*time
+
         rotation += momentumn/1000
         if (timer == limit) {
             console.log(rotation, 1/2*speed*Math.pow(limit/1000, 2), rotation/(1/2*speed*Math.pow(limit/1000, 2)), Date.now()-period);
@@ -165,11 +183,16 @@ function loop() {
         }
         if (hitEnd ? momentumn > 0 : momentumn < 0) {
             hitEnd = !hitEnd;
-            console.log((timer)*2, Math.abs(rotation).toFixed(3));
+            console.log(Math.round((timer)*1.98), Math.abs(rotation).toFixed(3));
             timer = 0;
         }
     }
-    info.innerText = `Frame: ${frames}`
+    info.innerText = 
+    `Frame: ${frames}
+    Momentumn: ${momentumn.toFixed(2)}
+    Rotation: ${rotation.toFixed(3)}
+    Weights: ${bar.children.length}
+    `
 
     bar.rotation.y = rotation;
 }
@@ -222,6 +245,5 @@ function createPoint(x, y, r=1) {
     loop();
     renderer.render(can, cam);
     frames++;
-    //time++;  //fucking stupid idito retard dumb
     requestAnimationFrame(renderLoop)
 })();

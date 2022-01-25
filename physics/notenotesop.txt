@@ -1,0 +1,32 @@
+simulation af roterende objekter med fokus på inertimoment.
+
+
+
+Inertimoment - formler for inertimoment
+
+
+(side 4 ville jeg have gået mere i detalje om hvorfor man bare kunne bruge formler til at udregne inertimoment for typiske former, i stedet for at se dem som lister af punktmasser. det vil jeg vise lidt mere her)
+
+programmerings fags motoder
+ - computational thinking
+ - C4 model
+
+simualtion og kode eksemple - kort
+ - manglende friktion
+
+
+eksperiment og fremgangsmåde
+ - forkert formel til fjeder kraft.
+ - jeg skulle bruge et forsøg til at teste simualtion
+
+
+sammenligning
+ - sammeligning mellem det virkelige eksperiment simulationen er en kopi af
+ - konsekvent afvigelse på -2%
+
+svær konklusion
+
+
+--noter
+ikke så meget impiri
+hypotetisk-deduktive

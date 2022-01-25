@@ -6,18 +6,31 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body>
+<body style="font-family:verdana">
     a
     <p id="box" style="width: 500px; position: fixed; left: 50px; top: 10px;">
-        <button id="pause" style="width: 70px">pause</button>
-        <data id="dataInfo">date: asd sadasd </data>
     </p>
     <!-- <canvas id="can" width="300" height="300" style="position: fixed; right: 400px; top: 70px;"></canvas> -->
     <canvas id="can" width="500" height="500" style="
         position: fixed; top: 50px; left: 50px; width: 500px; height: 500px;
-    "></canvas>
-    <div id="control" style="background-color: initial; min-width: 200px; min-height: 400px; display: inline-block; position: fixed; top: 50px; left: 600px;">
+        "></canvas>
+    <div id="control" style="background-color: brown; min-width: 200px; min-height: 400px; display: inline-block; position: fixed; top: 50px; left: 600px; padding: 10px; border-style: dashed; border-width: 2px; ">
+        <data id="dataInfo">date: asd sadasd </data><br>
+        <button id="pause" style="width: 70px">pause</button>
+        <button id="restart" style="width: 70px">restart</button><br>
+        <input type="number" id="startAngle" value="45" style="width: 70px">
+        <input type="radio" name="degrad" id="deg" checked>deg<input type="radio" name="degrad" id="rad">rad<br><br>
 
+        weight:<br>
+        <input type="number" name="number" id="weight" value="227"><br><br>
+
+        Presets:<br>
+        <button class="preset">1</button>
+        <button class="preset">2</button>
+        <button class="preset">3</button>
+        <button class="preset">4</button><br><br>
+        <button id="clear">clear all</button>
+        
     </div>
     <script src="three.js"></script><!--https://threejs.org/build/three.js-->
     <script src="script1.js"></script>
